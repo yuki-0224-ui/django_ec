@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}商品一覧{% endblock %}
+
+{% block content %}
+
+<!-- Header-->
+<header class="bg-dark py-5">
+        <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                        <h1 class="display-4 fw-bolder">Keyboard Shop</h1>
+                        <p class="lead fw-normal text-white-50 mb-0">キーボードを売ります。</p>
+                </div>
+        </div>
+</header>
+<!-- Section-->
+<section class="py-5 mb-auto">
+        <div class="container px-4 px-lg-5 mt-5">
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                        {% if products %}
+                        {% for product in products %}
+                        <div class="col mb-5">
+                                <div class="card h-100">
+                                        <div class="product-img-wrapper">
+                                                <!-- Product image-->
+                                                <img class="card-img-top"
+                                                        src="{{ product.images.all.0.image.url|default:DEFAULT_PRODUCT_THUMBNAIL.src }}"
+                                                        alt="{{ product.images.all.0.image_alt|default:DEFAULT_PRODUCT_THUMBNAIL.alt }}" />
+                                        </div>
+
+                                        <!-- Product details-->
+                                        <div class="card-body p-4">
+                                                <div class="text-center">
+                                                        <!-- Product name-->
+                                                        <h5 class="fw-bolder">{{ product.name }}</h5>
+                                                        <!-- Product price-->
+                                                        ¥{{ product.price }}
+                                                </div>
+                                        </div>
+
+                                        <!-- Product actions-->
+                                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                                <div class="text-center">
+                                                        <a class="btn btn-outline-dark mt-auto"
+                                                                href="{{ product.get_absolute_url }}">
+                                                                詳細を見る
+                                                        </a>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-center">商品が見つかりませんでした。</p>
+                        {% endif %}
+                </div>
+        </div>
+</section>
+{% endblock %}
