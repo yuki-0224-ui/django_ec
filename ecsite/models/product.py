@@ -23,6 +23,11 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    DEFAULT_IMAGE_SRC = 'https://dummyimage.com/600x700/dee2e6/6c757d.jpg'
+    DEFAULT_IMAGE_ALT = '商品画像なし'
+    DEFAULT_THUMBNAIL_SRC = 'https://dummyimage.com/450x300/dee2e6/6c757d.jpg'
+    DEFAULT_THUMBNAIL_ALT = 'サムネイル画像なし'
+
     def __str__(self):
         return self.name
 
@@ -36,6 +41,28 @@ class Product(models.Model):
 
     def is_sold_out(self):
         return self.stock == 0
+
+    def _get_image_attribute(self, attribute, default):
+        if self.images.exists():
+            obj = self.images.all()[0]
+            for attr in attribute.split('.'):
+                obj = getattr(obj, attr, default)
+                if obj == default:
+                    break
+            return obj
+        return default
+
+    def get_main_image_url(self):
+        return self._get_image_attribute('image.url', self.DEFAULT_IMAGE_SRC)
+
+    def get_main_image_alt(self):
+        return self._get_image_attribute('image_alt', self.DEFAULT_IMAGE_ALT)
+
+    def get_thumbnail_url(self):
+        return self._get_image_attribute('image.url', self.DEFAULT_THUMBNAIL_SRC)
+
+    def get_thumbnail_alt(self):
+        return self._get_image_attribute('image_alt', self.DEFAULT_THUMBNAIL_ALT)
 
 
 class ProductImage(models.Model):
