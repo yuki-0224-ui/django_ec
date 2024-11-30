@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}商品一覧{% endblock %}
+
+{% block content %}
+
+<!-- Header-->
+<header class="bg-dark py-5">
+        <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                        <h1 class="display-4 fw-bolder">Keyboard Shop</h1>
+                        <p class="lead fw-normal text-white-50 mb-0">キーボードを売ります。</p>
+                </div>
+        </div>
+</header>
+<!-- Section-->
+<section class="py-5 mb-auto">
+        <div class="container px-4 px-lg-5 mt-5">
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                        {% if products %}
+                        {% for product in products %}
+                            {% include 'components/product_card.html' %}
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-center">商品が見つかりませんでした。</p>
+                        {% endif %}
+                </div>
+        </div>
+</section>
+{% endblock %}
