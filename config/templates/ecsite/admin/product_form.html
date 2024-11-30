@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+        <div class="row justify-content-center">
+                <div class="col-lg-8">
+                        <div class="card">
+                                <div class="card-header">
+                                        <h2 class="card-title mb-0">商品{{ view.object.pk|yesno:"編集,作成" }}</h2>
+                                </div>
+                                <div class="card-body">
+                                        <form method="post" enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                {% if form.non_field_errors %}
+                                                <div class="alert alert-danger">
+                                                        {% for error in form.non_field_errors %}
+                                                        {{ error }}<br>
+                                                        {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                                {% for field in form %}
+                                                <div class="mb-3">
+                                                        {{ field.label_tag }}
+                                                        {{ field }}
+                                                        {% if field.errors %}
+                                                        <div class="alert alert-danger mt-2">
+                                                                {% for error in field.errors %}
+                                                                {{ error }}<br>
+                                                                {% endfor %}
+                                                        </div>
+                                                        {% endif %}
+                                                </div>
+                                                {% endfor %}
+
+                                                {{ formset.management_form }}
+                                                <div class="card mt-4">
+                                                        <div class="card-header">
+                                                                <h3 class="card-title h5 mb-0">商品画像</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                                {% for form in formset %}
+                                                                {{ form.id }}
+                                                                <div class="row mb-3">
+                                                                        <div class="col-md-6 mb-3">
+                                                                                {{ form.image.label_tag }}
+                                                                                {{ form.image }}
+                                                                                {% if form.image.errors %}
+                                                                                <div class="alert alert-danger mt-2">
+                                                                                        {% for error in form.image.errors %}
+                                                                                        {{ error }}<br>
+                                                                                        {% endfor %}
+                                                                                </div>
+                                                                                {% endif %}
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                                {{ form.image_alt.label_tag }}
+                                                                                {{ form.image_alt }}
+                                                                                {% if form.image_alt.errors %}
+                                                                                <div class="alert alert-danger mt-2">
+                                                                                        {% for error in form.image_alt.errors %}
+                                                                                        {{ error }}<br>
+                                                                                        {% endfor %}
+                                                                                </div>
+                                                                                {% endif %}
+                                                                        </div>
+                                                                </div>
+                                                                {% endfor %}
+                                                        </div>
+                                                </div>
+
+                                                <div class="mt-4">
+                                                        <button type="submit" class="btn btn-primary">
+                                                                <i class="bi bi-save"></i> 保存
+                                                        </button>
+                                                        <a href="{% url 'ecsite:admin_product_list' %}"
+                                                                class="btn btn-secondary">
+                                                                キャンセル
+                                                        </a>
+                                                </div>
+                                        </form>
+                                </div>
+                        </div>
+                </div>
+        </div>
+</div>
+{% endblock %}
