@@ -22,3 +22,7 @@ STORAGES = {
 DATABASES = {
     "default": env.db(),
 }
+
+BASICAUTH_USERS = {
+    env('BASIC_AUTH_USER'): env('BASIC_AUTH_PASSWORD')
+}

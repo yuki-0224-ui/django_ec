@@ -21,12 +21,6 @@
                         padding-top: 56px;
                 }
 
-                /* @media (min-width: 992px) { */
-                /*         body { */
-                /*                 padding-top: 72px; */
-                /*         } */
-                /* } */
-
                 .product-img-wrapper {
                         position: relative;
                         width: 100%;
@@ -56,16 +50,28 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
                 <div class="container px-4 px-lg-5">
                         <a class="navbar-brand" href="{% url 'ecsite:product_list' %}">Keyboard Shop</a>
-                        <form class="d-flex">
-                                <button class="btn btn-outline-dark" type="submit">
-                                        <i class="bi-cart-fill me-1"></i>
-                                        Cart
-                                        <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
-                                </button>
-                        </form>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#navbarNav">
+                                <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                                <ul class="navbar-nav me-auto">
+                                        <li class="nav-item">
+                                                <a class="nav-link" href="{% url 'ecsite:admin_product_list' %}">
+                                                        <i class="bi bi-gear"></i> 商品管理
+                                                </a>
+                                        </li>
+                                </ul>
+                                <form class="d-flex">
+                                        <button class="btn btn-outline-dark" type="submit">
+                                                <i class="bi-cart-fill me-1"></i>
+                                                Cart
+                                                <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
+                                        </button>
+                                </form>
+                        </div>
                 </div>
         </nav>
-
         {% block content %}{% endblock %}
         <!-- Footer-->
         <footer class="py-5 bg-dark mt-auto">
