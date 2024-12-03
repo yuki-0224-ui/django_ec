@@ -1,11 +1,12 @@
 from django.urls import path
-from .views import ProductListView, ProductDetailView
-from .views.admin_views import (
+from ecsite.views.product_view import ProductListView, ProductDetailView
+from ecsite.views.admin_views import (
     AdminProductListView,
     AdminProductCreateView,
     AdminProductUpdateView,
     AdminProductDeleteView
 )
+from ecsite.views.cart_views import CartDetailView, CartAddView, CartRemoveView, CartClearView
 
 app_name = 'ecsite'
 urlpatterns = [
@@ -19,4 +20,9 @@ urlpatterns = [
          AdminProductUpdateView.as_view(), name='admin_product_update'),
     path('admin/products/<slug:slug>/delete/',
          AdminProductDeleteView.as_view(), name='admin_product_delete'),
+    path('cart/', CartDetailView.as_view(), name='cart_detail'),
+    path('cart/add/<int:product_id>/', CartAddView.as_view(), name='cart_add'),
+    path('cart/remove/<int:product_id>/',
+         CartRemoveView.as_view(), name='cart_remove'),
+    path('cart/clear/', CartClearView.as_view(), name='cart_clear'),
 ]
