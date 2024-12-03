@@ -62,16 +62,15 @@
                                                 </a>
                                         </li>
                                 </ul>
-                                <form class="d-flex">
-                                        <button class="btn btn-outline-dark" type="submit">
-                                                <i class="bi-cart-fill me-1"></i>
-                                                Cart
-                                                <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
-                                        </button>
-                                </form>
+                                <a href="{% url 'ecsite:cart_detail' %}" class="btn btn-outline-dark">
+                                        <i class="bi-cart-fill me-1"></i>
+                                        Cart
+                                        <span class="badge bg-dark text-white ms-1 rounded-pill">{{ cart|length }}</span>
+                                </a>
                         </div>
                 </div>
         </nav>
+
         {% block content %}{% endblock %}
         <!-- Footer-->
         <footer class="py-5 bg-dark mt-auto">
