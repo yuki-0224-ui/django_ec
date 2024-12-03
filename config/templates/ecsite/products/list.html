@@ -4,7 +4,6 @@
 {% block title %}商品一覧{% endblock %}
 
 {% block content %}
-
 <!-- Header-->
 <header class="bg-dark py-5">
         <div class="container px-4 px-lg-5 my-5">
@@ -14,6 +13,20 @@
                 </div>
         </div>
 </header>
+
+<!-- Messages -->
+<div class="container px-4 px-lg-5 mt-3">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show"
+                role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+</div>
+
 <!-- Section-->
 <section class="py-5 mb-auto">
         <div class="container px-4 px-lg-5 mt-5">
