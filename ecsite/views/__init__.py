@@ -5,6 +5,12 @@ from .admin_views import (
     AdminProductDeleteView,
 )
 from .product_view import ProductListView, ProductDetailView
+from .cart_views import (
+    CartDetailView,
+    CartAddView,
+    CartRemoveView,
+    CartClearView,
+)
 
 __all__ = [
     'AdminProductListView',
@@ -13,4 +19,8 @@ __all__ = [
     'AdminProductDeleteView',
     'ProductListView',
     'ProductDetailView',
+    'CartDetailView',
+    'CartAddView',
+    'CartRemoveView',
+    'CartClearView',
 ]
