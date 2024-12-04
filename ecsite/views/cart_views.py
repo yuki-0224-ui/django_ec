@@ -2,42 +2,36 @@ from django.views.generic import TemplateView, View
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
-from ecsite.cart import Cart
-from ecsite.models import Product
+from ..models import Product, Cart
 
 
-class CartDetailView(TemplateView):
+class CartMixin:
+    def get_cart(self, create=True):
+        cart_id = self.request.session.get('cart_id')
+
+        if cart_id:
+            try:
+                return Cart.objects.get(id=cart_id)
+            except Cart.DoesNotExist:
+                if not create:
+                    return None
+
+        if create:
+            cart = Cart.objects.create()
+            self.request.session['cart_id'] = cart.id
+            return cart
+
+        return None
+
+
+class CartDetailView(CartMixin, TemplateView):
     template_name = 'ecsite/cart/detail.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        cart_data = self.request.session.get('cart')
-        cart = Cart.from_dict(cart_data)
 
-        products = cart.get_products(Product)
-
-        cart_items = [
-            {
-                'id': p.id,
-                'name': p.name,
-                'price': p.price,
-                'quantity': cart.items[p.id],
-                'subtotal': p.price * cart.items[p.id],
-                'stock': p.stock,
-            }
-            for p in products
-        ]
-
-        context['cart_items'] = cart_items
-        context['total'] = sum(item['subtotal'] for item in cart_items)
-        return context
-
-
-class CartAddView(View):
+class CartAddView(CartMixin, View):
     def post(self, request, *args, **kwargs):
         product = get_object_or_404(Product, id=kwargs['product_id'])
-        cart_data = request.session.get('cart')
-        cart = Cart.from_dict(cart_data)
+        cart = self.get_cart()
 
         if product.is_sold_out():
             messages.error(request, '申し訳ありません。この商品は在庫切れです。')
@@ -50,38 +44,27 @@ class CartAddView(View):
         except ValueError:
             return HttpResponseBadRequest('Invalid quantity')
 
-        if cart.would_exceed_quantity(product.id, quantity, product.stock):
+        is_exceeded, current_quantity = cart.check_stock_exceed(
+            product, quantity)
+        if is_exceeded:
             messages.error(
                 request,
-                f'在庫数を超える数量は指定できません。(現在のカート内数量: {cart.get_quantity(
-                    product.id)}, 在庫数: {product.stock})'
+                f'在庫数を超える数量は指定できません。(現在のカート内数量: {current_quantity}, 在庫数: {
+                    product.stock})'
             )
             return redirect(request.META.get('HTTP_REFERER', 'ecsite:product_list'))
 
-        cart.add(product.id, quantity)
-        request.session['cart'] = cart.to_dict()
+        cart.add_item(product, quantity)
         messages.success(request, f'{product.name}をカートに追加しました。')
         return redirect(request.META.get('HTTP_REFERER', 'ecsite:product_list'))
 
 
-class CartRemoveView(View):
+class CartRemoveView(CartMixin, View):
     def post(self, request, *args, **kwargs):
-        product_id = kwargs['product_id']
-        cart_data = request.session.get('cart')
-        cart = Cart.from_dict(cart_data)
+        product = get_object_or_404(Product, id=kwargs['product_id'])
+        cart = self.get_cart(create=False)
 
-        cart.remove(product_id)
-        request.session['cart'] = cart.to_dict()
-        return redirect('ecsite:cart_detail')
+        if cart:
+            cart.remove_item(product)
 
-
-class CartClearView(View):
-    def post(self, request, *args, **kwargs):
-        cart_data = request.session.get('cart')
-        cart = Cart.from_dict(cart_data)
-
-        cart.clear()
-        request.session['cart'] = cart.to_dict()
-
-        messages.success(request, 'カートを空にしました。')
         return redirect('ecsite:cart_detail')

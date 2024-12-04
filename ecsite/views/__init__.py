@@ -9,7 +9,6 @@ from .cart_views import (
     CartDetailView,
     CartAddView,
     CartRemoveView,
-    CartClearView,
 )
 
 __all__ = [
