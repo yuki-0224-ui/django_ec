@@ -4,10 +4,19 @@
 {% block title %}{{ product.name }}{% endblock %}
 
 {% block content %}
-
 <!-- Product section-->
 <section class="py-5">
         <div class="container px-4 px-lg-5 my-5">
+                {% if messages %}
+                <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                        </div>
+                        {% endfor %}
+                </div>
+                {% endif %}
+
                 <div class="row gx-4 gx-lg-5 align-items-center">
                         <div class="col-md-6">
                                 <div
@@ -37,15 +46,18 @@
                                 <div class="alert alert-success mb-3">
                                         <i class="bi bi-check-circle"></i> 在庫あり（残り{{ product.stock }}個）
                                 </div>
-                                <div class="d-flex">
-                                        <input class="form-control text-center me-3" id="inputQuantity" type="num"
-                                                value="1" style="max-width: 3rem" />
-                                        <button class="btn btn-outline-dark flex-shrink-0" type="button">
+                                <form method="post" action="{% url 'ecsite:cart_add' product.id %}" class="d-flex">
+                                        {% csrf_token %}
+                                        <input class="form-control text-center me-3" name="quantity" type="number"
+                                                value="1" min="1" max="{{ product.stock }}"
+                                                style="max-width: 5rem; padding-right: 1.5rem;" required />
+                                        <button type="submit" class="btn btn-outline-dark flex-shrink-0">
                                                 <i class="bi-cart-fill me-1"></i>
                                                 カートに追加
                                         </button>
-                                </div>
+                                </form>
                                 {% endif %}
+
                                 <div class="mt-4">
                                         <a href="{% url 'ecsite:product_list' %}" class="btn btn-secondary">
                                                 <i class="bi-arrow-left me-1"></i>
@@ -56,6 +68,7 @@
                 </div>
         </div>
 </section>
+
 <!-- Related items section-->
 <section class="py-5 bg-light">
         <div class="container px-4 px-lg-5 mt-5">
