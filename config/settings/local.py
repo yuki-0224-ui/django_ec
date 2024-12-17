@@ -33,3 +33,5 @@ DEBUG_TOOLBAR_CONFIG = {
 BASICAUTH_USERS = {
     env('BASIC_AUTH_USER'): env('BASIC_AUTH_PASSWORD')
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
