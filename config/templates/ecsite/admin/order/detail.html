@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container px-4 px-lg-5 mt-5">
+        <h2 class="mb-4">購入明細詳細</h2>
+
+        <div class="card mb-4">
+                <div class="card-header">
+                        <h5 class="mb-0">注文情報</h5>
+                </div>
+                <div class="card-body">
+                        <div class="row mb-3">
+                                <div class="col-md-6">
+                                        <p><strong>注文ID:</strong> {{ order.id }}</p>
+                                        <p><strong>購入者:</strong> {{ order.last_name }} {{ order.first_name }}</p>
+                                        <p><strong>メールアドレス:</strong> {{ order.email }}</p>
+                                        <p><strong>購入日時:</strong> {{ order.created_at|date:"Y/m/d H:i" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                        <p><strong>配送先住所:</strong></p>
+                                        <p>〒{{ order.zip_code }}</p>
+                                        <p>{{ order.country }} : {{ order.state }}</p>
+                                        <p>{{ order.address }}</p>
+                                        {% if order.address2 %}
+                                        <p>{{ order.address2 }}</p>
+                                        {% endif %}
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+        <div class="card mb-4">
+                <div class="card-header">
+                        <h5 class="mb-0">注文商品</h5>
+                </div>
+                <div class="card-body">
+                        <div class="table-responsive">
+                                <table class="table">
+                                        <thead>
+                                                <tr>
+                                                        <th>商品名</th>
+                                                        <th>単価</th>
+                                                        <th>数量</th>
+                                                        <th>小計</th>
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                                {% for item in order_items %}
+                                                <tr>
+                                                        <td>{{ item.product.name }}</td>
+                                                        <td>¥{{ item.price }}</td>
+                                                        <td>{{ item.quantity }}</td>
+                                                        <td>¥{{ item.get_subtotal }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                                <tr>
+                                                        <td colspan="3" class="text-end"><strong>合計</strong></td>
+                                                        <td><strong>¥{{ order.total_amount }}</strong></td>
+                                                </tr>
+                                        </tfoot>
+                                </table>
+                        </div>
+                </div>
+        </div>
+
+        <div class="mb-4">
+                <a href="{% url 'ecsite:admin_order_list' %}" class="btn btn-secondary">購入明細一覧に戻る</a>
+        </div>
+</div>
+{% endblock %}
