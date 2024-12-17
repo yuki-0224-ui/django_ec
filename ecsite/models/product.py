@@ -1,8 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
-
-# Create your models here.
+from django.utils import timezone
 
 
 def product_image_path(instance, filename):
@@ -20,6 +19,8 @@ class Product(models.Model):
     price = models.PositiveIntegerField(default=0)
     stock = models.PositiveIntegerField(default=0)
     sold_quantity = models.PositiveIntegerField(default=0)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -39,7 +40,6 @@ class Product(models.Model):
     def _should_update_slug(self):
         if not self.pk:
             return False
-
         existing_product = Product.objects.get(pk=self.pk)
         return existing_product.name != self.name
 
@@ -52,6 +52,20 @@ class Product(models.Model):
 
     def is_sold_out(self):
         return self.stock == 0
+
+    def soft_delete(self):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+
+    # def restore(self):
+    #     self.is_deleted = False
+    #     self.deleted_at = None
+    #     self.save()
+
+    @classmethod
+    def get_available(cls):
+        return cls.objects.filter(is_deleted=False)
 
     def _get_image_attribute(self, attribute, default):
         if self.images.exists():
@@ -84,16 +98,8 @@ class ProductImage(models.Model):
 
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to=product_image_path, blank=True,)
+    image = models.ImageField(upload_to=product_image_path, blank=True)
     image_alt = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return self.product.name
-
-    # def clean(self):
-    #     if not self.image and not self.image_alt:
-    #         self.image_alt = self.product.DEFAULT_IMAGE_ALT
-    #     elif self.image and not self.image_alt:
-    #         from django.core.exceptions import ValidationError
-    #         raise ValidationError(
-    #             {'image_alt': '画像が設定されている場合は、代替テキストを入力してください。'})
