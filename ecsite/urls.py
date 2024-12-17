@@ -4,7 +4,9 @@ from ecsite.views.admin_views import (
     AdminProductListView,
     AdminProductCreateView,
     AdminProductUpdateView,
-    AdminProductDeleteView
+    AdminProductDeleteView,
+    AdminOrderListView,
+    AdminOrderDetailView
 )
 from ecsite.views.cart_views import CartDetailView, CartAddView, CartRemoveView
 
@@ -20,6 +22,9 @@ urlpatterns = [
          AdminProductUpdateView.as_view(), name='admin_product_update'),
     path('admin/products/<slug:slug>/delete/',
          AdminProductDeleteView.as_view(), name='admin_product_delete'),
+    path('admin/orders/', AdminOrderListView.as_view(), name='admin_order_list'),
+    path('admin/orders/<int:pk>/', AdminOrderDetailView.as_view(),
+         name='admin_order_detail'),
     path('cart/', CartDetailView.as_view(), name='cart_detail'),
     path('cart/add/<int:product_id>/', CartAddView.as_view(), name='cart_add'),
     path('cart/remove/<int:product_id>/',
