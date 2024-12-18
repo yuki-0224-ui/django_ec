@@ -1,11 +1,19 @@
 from django.db import models
 from .product import Product
+from .promotion import PromotionCode
 
 
 class Cart(models.Model):
     class Meta:
         db_table = 'carts'
 
+    promotion_code = models.ForeignKey(
+        'PromotionCode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='carts'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -31,6 +39,25 @@ class Cart(models.Model):
         except CartItem.DoesNotExist:
             current_quantity = 0
         return (current_quantity + add_quantity) > product.stock, current_quantity
+
+    def get_total_amount(self) -> int:
+        cart_items = self.items.select_related('product').all()
+        subtotal = sum(item.get_subtotal() for item in cart_items)
+
+        if self.promotion_code and not self.promotion_code.is_used:
+            return max(0, subtotal - self.promotion_code.discount_amount)
+        return subtotal
+
+    def apply_promotion_code(self, code: str) -> tuple[bool, str]:
+        try:
+            promotion = PromotionCode.objects.get(code=code, is_used=False)
+            if self.promotion_code:
+                return False, 'プロモーションコードは既に適用されています。'
+            self.promotion_code = promotion
+            self.save()
+            return True, f'プロモーションコードを適用しました。{promotion.discount_amount}円割引されます。'
+        except PromotionCode.DoesNotExist:
+            return False, '無効なプロモーションコードです。'
 
 
 class CartItem(models.Model):
