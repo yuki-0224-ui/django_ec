@@ -1,4 +1,6 @@
+# models/order.py
 from django.db import models
+from django.utils import timezone
 from .product import Product
 from .cart import Cart
 
@@ -22,7 +24,11 @@ class Order(models.Model):
     card_expiration = models.CharField(max_length=5)
     card_cvv = models.CharField(max_length=4)
 
+    subtotal_amount = models.PositiveIntegerField(help_text='商品合計')
+    discount_amount = models.PositiveIntegerField(default=0, help_text='割引額')
     total_amount = models.PositiveIntegerField()
+    promotion_code = models.CharField(max_length=7, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,6 +36,24 @@ class Order(models.Model):
         return f"注文 #{self.id} - {self.last_name} {self.first_name} ({self.created_at: %Y-%m-%d})"
 
     def create_order_items(self, cart: Cart):
+        self.subtotal_amount = sum(item.get_subtotal()
+                                   for item in cart.items.all())
+
+        if cart.promotion_code and not cart.promotion_code.is_used:
+            self.discount_amount = cart.promotion_code.discount_amount
+            self.promotion_code = cart.promotion_code.code
+            self.total_amount = max(
+                0, self.subtotal_amount - self.discount_amount)
+
+            cart.promotion_code.is_used = True
+            cart.promotion_code.used_at = timezone.now()
+            cart.promotion_code.save()
+        else:
+            self.discount_amount = 0
+            self.total_amount = self.subtotal_amount
+
+        self.save()
+
         order_items = []
         for cart_item in cart.items.all():
             order_item = OrderItem(
