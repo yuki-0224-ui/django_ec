@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container px-4 px-lg-5 mt-5">
+        <h2 class="mb-4">購入明細一覧</h2>
+
+        <div class="card mb-4">
+                <div class="card-body">
+                        <div class="row">
+                                <div class="col-md-6">
+                                        <h5>総注文数: {{ total_orders }}</h5>
+                                </div>
+                                <div class="col-md-6">
+                                        <h5>総売上: ¥{{ total_amount }}</h5>
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+        <div class="table-responsive">
+                <table class="table">
+                        <thead>
+                                <tr>
+                                        <th>注文ID</th>
+                                        <th>購入者</th>
+                                        <th>合計金額</th>
+                                        <th>購入日時</th>
+                                        <th>詳細</th>
+                                </tr>
+                        </thead>
+                        <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                        <td>{{ order.id }}</td>
+                                        <td>{{ order.last_name }} {{ order.first_name }}</td>
+                                        <td>¥{{ order.total_amount }}</td>
+                                        <td>{{ order.created_at|date:"Y/m/d H:i" }}</td>
+                                        <td>
+                                                <a href="{% url 'ecsite:admin_order_detail' order.pk %}"
+                                                        class="btn btn-sm btn-outline-primary">詳細</a>
+                                        </td>
+                                </tr>
+                                {% endfor %}
+                        </tbody>
+                </table>
+        </div>
+</div>
+{% endblock %}

@@ -1,8 +1,11 @@
-from django.views.generic import TemplateView, View
+from django.views.generic import FormView, View
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
+from django.urls import reverse_lazy
 from ..models import Product, Cart
+from ecsite.forms.order_forms import OrderForm
+from ecsite.email_service import send_order_confirmation
 
 
 class CartMixin:
@@ -24,8 +27,47 @@ class CartMixin:
         return None
 
 
-class CartDetailView(CartMixin, TemplateView):
+class CartDetailView(CartMixin, FormView):
     template_name = 'ecsite/cart/detail.html'
+    form_class = OrderForm
+    success_url = reverse_lazy('ecsite:product_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        cart = self.get_cart(create=False)
+        if not cart or not cart.items.exists():
+            messages.warning(request, 'カートが空です。')
+            return redirect('ecsite:product_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        cart = self.get_cart(create=False)
+        if not cart or not cart.items.exists():
+            messages.error(self.request, 'カートが空です。')
+            return redirect('ecsite:product_list')
+
+        for item in cart.items.select_related('product').all():
+            if item.quantity > item.product.stock:
+                messages.error(
+                    self.request,
+                    f'{item.product.name}の在庫が不足しています。'
+                )
+                return self.form_invalid(form)
+
+        order = form.save(commit=False)
+        cart_items = cart.items.select_related('product').all()
+        order.total_amount = sum(item.get_subtotal() for item in cart_items)
+        order.save()
+
+        order.create_order_items(cart)
+
+        if order.email:
+            send_order_confirmation(order)
+
+        cart.delete()
+        del self.request.session['cart_id']
+
+        messages.success(self.request, '購入ありがとうございます')
+        return super().form_valid(form)
 
 
 class CartAddView(CartMixin, View):

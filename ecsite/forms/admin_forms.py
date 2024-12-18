@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, ProductImage
+from ecsite.models.product import Product, ProductImage
 
 
 class ModelFormWithFormSetMixin:
