@@ -37,9 +37,14 @@
                         text-align: left;
                 }
 
-                .total {
+                .total-row {
                         font-weight: bold;
                         text-align: right;
+                        margin: 5px 0;
+                }
+
+                .discount {
+                        color: #28a745;
                 }
 
                 .footer {
@@ -91,7 +96,16 @@
                         </tbody>
                 </table>
 
-                <p class="total">合計金額: ¥{{ order.total_amount }}</p>
+                <p class="total-row">商品合計: ¥{{ order.subtotal_amount }}</p>
+                {% if order.discount_amount > 0 %}
+                <p class="total-row discount">
+                        プロモーション割引: -¥{{ order.discount_amount }}
+                        {% if order.promotion_code %}
+                        <br><small>(コード: {{ order.promotion_code }})</small>
+                        {% endif %}
+                </p>
+                {% endif %}
+                <p class="total-row">お支払合計: ¥{{ order.total_amount }}</p>
 
                 <div class="footer">
                         <p>このメールは配信専用です。ご返信いただいてもお答えできません。</p>
