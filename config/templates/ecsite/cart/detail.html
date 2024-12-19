@@ -49,20 +49,50 @@
                                         </li>
                                         {% endfor %}
 
-
+                                        {% if discount_amount %}
+                                        <li class="list-group-item d-flex justify-content-between bg-light">
+                                                <div class="text-primary">
+                                                        <h6 class="my-0">小計</h6>
+                                                </div>
+                                                <span class="text-body-secondary">¥{{ total|stringformat:"d" }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between bg-light">
+                                                <div class="text-success">
+                                                        <h6 class="my-0">割引</h6>
+                                                </div>
+                                                <span class="text-success">-¥{{ discount_amount|stringformat:"d" }}</span>
+                                        </li>
                                         <li class="list-group-item d-flex justify-content-between">
                                                 <span>合計</span>
+                                                <strong>¥{{ total_after_discount|stringformat:"d" }}</strong>
+                                        </li>
+                                        {% else %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                                <span>合計（税込）</span>
                                                 <strong>¥{{ total|stringformat:"d" }}</strong>
                                         </li>
+                                        {% endif %}
                                 </ul>
 
-                                <form class="card p-2">
-                                        <div class="input-group">
-                                                <input type="text" class="form-control" placeholder="クーポンコード"
-                                                        name="promo_code">
-                                                <button type="submit" class="btn btn-secondary">適用</button>
-                                        </div>
-                                </form>
+                                <!-- プロモーションコード入力フォーム -->
+                                {% if promotion_form %}
+                                <div class="card p-2 mb-3">
+                                        <form method="post">
+                                                {% csrf_token %}
+                                                <div class="input-group">
+                                                        {{ promotion_form.code }}
+                                                        <button type="submit" name="apply_promotion"
+                                                                class="btn btn-secondary">
+                                                                適用
+                                                        </button>
+                                                </div>
+                                        </form>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-success" role="alert">
+                                        プロモーションコードが適用されています
+                                </div>
+                                {% endif %}
                         </div>
 
                         <!-- 注文フォーム部分 -->

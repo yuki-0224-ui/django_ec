@@ -5,6 +5,7 @@ from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy
 from ..models import Product, Cart
 from ecsite.forms.order_forms import OrderForm
+from ecsite.forms.promotion_forms import PromotionCodeForm
 from ecsite.email_service import send_order_confirmation
 
 
@@ -33,14 +34,53 @@ class CartDetailView(CartMixin, FormView):
     success_url = reverse_lazy('ecsite:product_list')
 
     def dispatch(self, request, *args, **kwargs):
-        cart = self.get_cart(create=False)
-        if not cart or not cart.items.exists():
+        self.cart = self.get_cart(create=False)
+        if not self.cart or not self.cart.items.exists():
             messages.warning(request, 'カートが空です。')
             return redirect('ecsite:product_list')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cart = self.cart
+
+        if cart.promotion_code:
+            if not cart.promotion_code.is_used:
+                context['discount_amount'] = cart.promotion_code.discount_amount
+                context['total_after_discount'] = cart.get_total_amount()
+            else:
+                cart.promotion_code = None
+                cart.save()
+
+        if not cart.promotion_code:
+            context['promotion_form'] = PromotionCodeForm()
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if 'apply_promotion' not in request.POST:
+            return super().post(request, *args, **kwargs)
+
+        cart = self.cart
+        promotion_form = PromotionCodeForm(request.POST)
+
+        if not promotion_form.is_valid():
+            error_message = promotion_form.errors.get(
+                'code', ["無効なプロモーションコードです"])[0]
+            messages.error(request, error_message)
+            return redirect('ecsite:cart_detail')
+
+        success, message = cart.apply_promotion_code(
+            promotion_form.cleaned_data['code'])
+        if success:
+            messages.success(request, message)
+        else:
+            messages.error(request, message)
+
+        return redirect('ecsite:cart_detail')
+
     def form_valid(self, form):
-        cart = self.get_cart(create=False)
+        cart = self.cart
         if not cart or not cart.items.exists():
             messages.error(self.request, 'カートが空です。')
             return redirect('ecsite:product_list')
@@ -54,17 +94,14 @@ class CartDetailView(CartMixin, FormView):
                 return self.form_invalid(form)
 
         order = form.save(commit=False)
-        cart_items = cart.items.select_related('product').all()
-        order.total_amount = sum(item.get_subtotal() for item in cart_items)
-        order.save()
-
         order.create_order_items(cart)
 
         if order.email:
             send_order_confirmation(order)
 
         cart.delete()
-        del self.request.session['cart_id']
+        if 'cart_id' in self.request.session:
+            del self.request.session['cart_id']
 
         messages.success(self.request, '購入ありがとうございます')
         return super().form_valid(form)

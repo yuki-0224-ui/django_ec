@@ -2,6 +2,7 @@ from django.contrib import admin
 from ecsite.models.product import Product, ProductImage
 from ecsite.models.order import Order, OrderItem
 from ecsite.models.cart import Cart, CartItem
+from ecsite.models.promotion import PromotionCode
 
 # Register your models here.
 
@@ -26,3 +27,4 @@ admin.site.register(Product)
 admin.site.register(ProductImage)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Cart, CartAdmin)
+admin.site.register(PromotionCode)
