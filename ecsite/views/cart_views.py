@@ -3,7 +3,6 @@ from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy
-from django.utils import timezone
 from ..models import Product, Cart
 from ecsite.forms.order_forms import OrderForm
 from ecsite.forms.promotion_forms import PromotionCodeForm
@@ -59,24 +58,26 @@ class CartDetailView(CartMixin, FormView):
         return context
 
     def post(self, request, *args, **kwargs):
-        if 'apply_promotion' in request.POST:
-            cart = self.cart
-            promotion_form = PromotionCodeForm(request.POST)
+        if 'apply_promotion' not in request.POST:
+            return super().post(request, *args, **kwargs)
 
-            if promotion_form.is_valid():
-                success, message = cart.apply_promotion_code(
-                    promotion_form.cleaned_data['code']
-                )
-                if success:
-                    messages.success(request, message)
-                else:
-                    messages.error(request, message)
-            else:
-                messages.error(request, promotion_form.errors['code'][0])
+        cart = self.cart
+        promotion_form = PromotionCodeForm(request.POST)
 
+        if not promotion_form.is_valid():
+            error_message = promotion_form.errors.get(
+                'code', ["無効なプロモーションコードです"])[0]
+            messages.error(request, error_message)
             return redirect('ecsite:cart_detail')
 
-        return super().post(request, *args, **kwargs)
+        success, message = cart.apply_promotion_code(
+            promotion_form.cleaned_data['code'])
+        if success:
+            messages.success(request, message)
+        else:
+            messages.error(request, message)
+
+        return redirect('ecsite:cart_detail')
 
     def form_valid(self, form):
         cart = self.cart
